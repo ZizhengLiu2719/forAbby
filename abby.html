@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Michael's Heart Runner</title>
+  <!-- Romantic font -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      overflow: hidden;
+      font-family: 'Great Vibes', cursive;
+      background: linear-gradient(to bottom, #ffe3ea 0%, #ffc1cc 60%, #ff9bb3 100%);
+      color: hotpink;
+    }
+    #hint {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      font-size: 1.5rem;
+      z-index: 10;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    #score {
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 3rem;
+      z-index: 10;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+  <div id="hint">Hint: press space-bar to jump</div>
+  <div id="score"></div>
+  <canvas id="gameCanvas"></canvas>
+  <audio id="bgMusic2" src="assets/game.mp3" loop autoplay></audio>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    const scoreEl = document.getElementById('score');
+
+    // --- SPRITE SETUP (5 frames) ---
+    const frameCount = 5;
+    const rawFrames = [];
+    const frames = [];
+    for (let i = 1; i <= frameCount; i++) {
+      const img = new Image(); img.src = `michael_run${i}.png`; rawFrames.push(img);
+    }
+    const rawHeart = new Image(); rawHeart.src = 'heart_obstacle.png';
+    let heartCanvas;
+
+    // Preload & strip background
+    let loaded = 0;
+    function checkStart() { if (++loaded === frameCount + 1) startGame(); }
+    function processImage(img, callback) {
+      const off = document.createElement('canvas'); off.width = img.width; off.height = img.height;
+      const octx = off.getContext('2d'); octx.drawImage(img, 0, 0);
+      const data = octx.getImageData(0,0,off.width,off.height);
+      for (let i = 0; i < data.data.length; i += 4) {
+        if (data.data[i] > 240 && data.data[i+1] > 240 && data.data[i+2] > 240) data.data[i+3] = 0;
+      }
+      octx.putImageData(data,0,0); callback(off);
+    }
+    rawFrames.forEach((img, idx) => img.onload = () => processImage(img, c => { frames[idx] = c; checkStart(); }));
+    rawHeart.onload = () => processImage(rawHeart, c => { heartCanvas = c; checkStart(); });
+
+    // --- GAME STATE ---
+    const phrase = 'I love you Abby'; let score = 0;
+    let gameOver = false, gameWin = false;
+    let gameSpeed = 1.2;
+    const obstacles = [], rainHearts = [];
+    let spawnTimer = 0, rainTimer = 0;
+    let spawnInterval = 400 + Math.random()*400;
+    const player = { x:50, y:0, width:60, height:80, vy:0, gravity:0.2, jumpForce:15, isJumping:false };
+    const hitbox = { xOffset:10, yOffset:10, wOffset:20, hOffset:20 };
+    let redirectScheduled = false;
+
+    function startGame(){ resize(); loop(); }
+    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; player.y = canvas.height - player.height - 10; }
+    window.addEventListener('resize', resize);
+
+    function spawnObstacle(){ const size = 50; obstacles.push({ x:canvas.width, y:canvas.height-size-10, width:size, height:size }); }
+    function spawnRain(){ rainHearts.push({ x:Math.random()*canvas.width, y:-20, vy:1+Math.random(), size:16+Math.random()*8, alpha:0.8 }); }
+
+    let fIdx = 0, fTimer = 0, fInterval = 20;
+    function update(){ if (gameOver) return;
+      if (++fTimer > fInterval) { fIdx = (fIdx+1)%frames.length; fTimer = 0; }
+      player.vy -= player.gravity; player.y -= player.vy;
+      if (player.y > canvas.height - player.height - 10) { player.y = canvas.height - player.height - 10; player.vy = 0; player.isJumping = false; }
+      spawnTimer++; if (spawnTimer > spawnInterval) { spawnObstacle(); spawnTimer = 0; spawnInterval = 400 + Math.random()*400; }
+      if (++rainTimer > 30) { spawnRain(); rainTimer = 0; }
+      obstacles.forEach((o,i) => {
+        o.x -= gameSpeed;
+        if (o.x + o.width < 0) { obstacles.splice(i,1); score++; if (score <= phrase.length) scoreEl.textContent = phrase.substring(0,score); if (score >= phrase.length) { gameOver = true; gameWin = true; } }
+        const px = player.x + hitbox.xOffset, py = player.y + hitbox.yOffset;
+        const pw = player.width - hitbox.wOffset, ph = player.height - hitbox.hOffset;
+        if (!gameWin && px < o.x + o.width && px + pw > o.x && py < o.y + o.height && py + ph > o.y) {
+          gameOver = true;
+        }
+      });
+      // schedule redirect if win
+      if (gameOver && gameWin && !redirectScheduled) {
+        redirectScheduled = true;
+        setTimeout(() => window.location.href = 'victory.html', 3000);
+      }
+      rainHearts.forEach((h,i) => { h.y += h.vy; h.alpha -= 0.005; if (h.alpha <= 0) rainHearts.splice(i,1); });
+    }
+    function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height);
+      rainHearts.forEach(h => { ctx.globalAlpha = h.alpha; ctx.fillStyle = 'hotpink'; ctx.font = `${h.size}px serif`; ctx.fillText('💗', h.x, h.y); }); ctx.globalAlpha = 1;
+      ctx.fillStyle = '#fff'; ctx.fillRect(0,canvas.height-10,canvas.width,10);
+      ctx.drawImage(frames[fIdx], player.x, player.y, player.width, player.height);
+      obstacles.forEach(o => ctx.drawImage(heartCanvas, o.x, o.y, o.width, o.height));
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#fff'; ctx.font = '40px "Great Vibes", cursive'; ctx.textAlign = 'center';
+        const msg = gameWin ? 'Michael gives his everything to Abby, what would Abby say? 😊' : 'Michael needs to put more effort for Abby 😢';
+        ctx.fillText(msg, canvas.width/2, canvas.height/2);
+      }
+    }
+    function loop(){ update(); draw(); if (!gameOver) requestAnimationFrame(loop); }
+
+    window.addEventListener('keydown', e => { if ((e.code==='Space' || e.code==='ArrowUp') && !player.isJumping) { player.vy = player.jumpForce; player.isJumping = true; } });
+    canvas.addEventListener('click', () => { if (!player.isJumping) { player.vy = player.jumpForce; player.isJumping = true; } });
+    scoreEl.textContent = '';
+  </script>
+</body>
+</html>

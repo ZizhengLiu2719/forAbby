@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Victory</title>
+  <!-- Romantic font -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      position: relative;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      background:linear-gradient(to bottom, #ffe3ea, #ff9bb3);
+      font-family:'Great Vibes', cursive;
+      color: hotpink;
+      text-align: center;
+      overflow: hidden;
+    }
+    #rainContainer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .heart-drop {
+      position: absolute;
+      font-size: 1.5rem;
+      color: hotpink;
+      animation: fall 5s linear;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-2rem); opacity:1; }
+      100% { transform: translateY(100vh); opacity:0; }
+    }
+    #hint { position:absolute; top:1rem; left:1rem; font-size:1.5rem; z-index:10; text-shadow:1px 1px 2px rgba(0,0,0,0.2);}    
+    #question, #response, #animation { width: 100%; z-index:10; }
+    #question h1 { font-size:3rem; margin-bottom:1rem; }
+    .btn { background: hotpink; border: none; border-radius:1rem; padding:0.5rem 1.5rem; margin:0 0.5rem; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2); transition: transform 0.2s; }
+    .btn:hover { transform:scale(1.05); }
+    #response { font-size:2rem; opacity:0; transition:opacity 1s; margin-top:1rem; min-height:2.5rem; }
+    #animation { display:none; }
+    #animation.show { display:block; }
+    #animation img { width:300px; height:auto; opacity:0; transform: scale(0.5); transition: opacity 0.5s ease, transform 0.5s ease; margin-top:1.5rem; }
+  </style>
+</head>
+<body>
+    <audio id="bgMusic3" src="assets/end.mp3" loop autoplay></audio>
+  <div id="rainContainer"></div>
+  <div id="question">
+    <h1>Do you love me? my Abby.</h1>
+    <button class="btn" id="yesBtn">Yes</button>
+    <button class="btn" id="noBtn">No</button>
+  </div>
+  <div id="response"></div>
+  <div id="animation"><img src="abbyAndMichael.png" alt="Abby and Michael"></div>
+
+  <script>
+    const rainContainer = document.getElementById('rainContainer');
+    // spawn hearts raining
+    setInterval(() => {
+      const drop = document.createElement('div');
+      drop.className = 'heart-drop';
+      drop.style.left = Math.random()*100 + 'vw';
+      drop.textContent = '💗';
+      rainContainer.appendChild(drop);
+      drop.addEventListener('animationend', () => drop.remove());
+    }, 300);
+
+    const question = document.getElementById('question');
+    const response = document.getElementById('response');
+    const animation = document.getElementById('animation');
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+
+    function handleAnswer(isYes) {
+      question.style.display = 'none';
+      response.style.display = 'block';
+      if (isYes) {
+        response.textContent = 'Thanks babe, the best thing in my life is meeting you, I love you very very very much! ❤️';
+      } else {
+        response.textContent = 'That is ok babe, I will use my whole life to change this No button to Yes button ❤️';
+      }
+      setTimeout(() => response.style.opacity = 1, 100);
+      setTimeout(() => {
+        response.style.opacity = 0;
+        setTimeout(() => {
+          response.style.display = 'none';
+          animation.classList.add('show');
+          const img = animation.querySelector('img');
+          img.style.opacity = 1;
+          img.style.transform = 'scale(1)';
+        }, 1000);
+      }, 6000);
+    }
+
+    yesBtn.addEventListener('click', () => handleAnswer(true));
+    noBtn.addEventListener('click', () => handleAnswer(false));
+  </script>
+</body>
+</html>

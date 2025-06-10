@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Michael's Heart</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+</head>
+<body>
+  <audio id="bgMusic" src="assets/start.mp3" loop autoplay></audio>
+  <div class="card">
+    <!-- top text -->
+    <div class="header">
+      💌 correct name to continue
+    </div>
+
+    <!-- big heart -->
+    <div class="middle">
+      <svg class="heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-3.08 2.42-5.5 5.5-5.5
+                 c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c3.08 0 5.5 2.42 5.5 5.5
+                 c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+    </div>
+
+    <!-- bottom form -->
+    <div class="footer">
+      <form id="pwForm">
+        <label for="pwInput">Michael Love</label>
+        <input
+          id="pwInput"
+          name="pw"
+          type="text"
+          placeholder="hint: 4 lower characters"
+          maxlength="4"
+          autocomplete="off"
+        ><br>
+        <button type="submit">Affirm</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- load your script after the DOM -->
+  <script src="script.js" defer></script>
+</body>
+</html>
