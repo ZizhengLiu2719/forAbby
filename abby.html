@@ -31,6 +31,25 @@
       z-index: 10;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
+    #restartBtn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      z-index: 10;
+      background-color: hotpink;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-family: 'Great Vibes', cursive;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      display: none;
+    }
+    #restartBtn:hover {
+      background-color: #ff69b4;
+    }
     canvas {
       display: block;
       width: 100vw;
@@ -42,12 +61,14 @@
 <body>
   <div id="hint">Hint: press space-bar to jump</div>
   <div id="score"></div>
+  <button id="restartBtn">Restart</button>
   <canvas id="gameCanvas"></canvas>
   <audio id="bgMusic" src="assets/game.mp3" loop autoplay></audio>  <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     const scoreEl = document.getElementById('score');
+    const restartBtn = document.getElementById('restartBtn');
 
     // --- SPRITE SETUP (5 frames) ---
     const frameCount = 5;
@@ -77,7 +98,7 @@
     // --- GAME STATE ---
     const phrase = 'I love you Abby'; let score = 0;
     let gameOver = false, gameWin = false;
-    let gameSpeed = 1.2;
+    let gameSpeed = 1.5;
     const obstacles = [], rainHearts = [];
     let spawnTimer = 0, rainTimer = 0;
     let spawnInterval = 400 + Math.random()*400;
@@ -113,6 +134,10 @@
         redirectScheduled = true;
         setTimeout(() => window.location.href = 'victory.html', 3000);
       }
+      // show restart button if game over but not win
+      if (gameOver && !gameWin) {
+        restartBtn.style.display = 'block';
+      }
       rainHearts.forEach((h,i) => { h.y += h.vy; h.alpha -= 0.005; if (h.alpha <= 0) rainHearts.splice(i,1); });
     }
     function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -129,8 +154,34 @@
     }
     function loop(){ update(); draw(); if (!gameOver) requestAnimationFrame(loop); }
 
+    function restartGame() {
+      // Reset all game variables
+      gameOver = false;
+      gameWin = false;
+      score = 0;
+      obstacles.length = 0;
+      rainHearts.length = 0;
+      spawnTimer = 0;
+      rainTimer = 0;
+      spawnInterval = 400 + Math.random()*400;
+      redirectScheduled = false;
+      player.y = canvas.height - player.height - 10;
+      player.vy = 0;
+      player.isJumping = false;
+      
+      // Hide restart button
+      restartBtn.style.display = 'none';
+      
+      // Reset score display
+      scoreEl.textContent = '';
+      
+      // Start the game loop again
+      loop();
+    }
+
     window.addEventListener('keydown', e => { if ((e.code==='Space' || e.code==='ArrowUp') && !player.isJumping) { player.vy = player.jumpForce; player.isJumping = true; } });
     canvas.addEventListener('click', () => { if (!player.isJumping) { player.vy = player.jumpForce; player.isJumping = true; } });
+    restartBtn.addEventListener('click', restartGame);
     scoreEl.textContent = '';
   </script>
 </body>
