@@ -15,6 +15,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const pwForm  = document.getElementById('pwForm');
     const pwInput = document.getElementById('pwInput');
     const SECRET  = 'abby';  // lowercase
+
+    const bgMusic = document.getElementById('bgMusic');
+
+    function tryPlayMusic() {
+      bgMusic.play().catch(err => {
+        console.warn('Autoplay blocked or failed:', err);
+      });
+    }
+
+    // Play music on first click anywhere on the page
+    document.addEventListener('click', tryPlayMusic, { once: true });
   
     pwForm.addEventListener('submit', e => {
       e.preventDefault();
