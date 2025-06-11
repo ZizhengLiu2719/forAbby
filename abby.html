@@ -43,8 +43,7 @@
   <div id="hint">Hint: press space-bar to jump</div>
   <div id="score"></div>
   <canvas id="gameCanvas"></canvas>
-  <audio id="bgMusic2" src="assets/game.mp3" loop autoplay></audio>
-  <script>
+  <audio id="bgMusic" src="assets/start.mp3" loop autoplay muted playsinline></audio>  <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
